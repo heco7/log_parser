@@ -4,31 +4,26 @@ import re
 import dateutil.parser as parser
 from collections import Counter
 
-# Creates an absolute filepath variable for the logfile
-filePath = 'F:\\almhuette-raith-at-access.log'
+filePath = 'almhuette-raith-at-access.log'
 
-# Regex used for finding string patterns
+# Regex
 IPregex = r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
 Dateregex = r'\d{2}/\w{3}/\d{4}'
 ISOregex = r'\d{4}\-\d{2}\-\d{2}'
 
-# Dictionary for the earliest date
+# Dictionaries for dates/IP hit count
 earliestDate = {}
-# Dictionary for the latest date
 latestDate = {}
-# Count the amount of hits for each IP
 hits = {}
 
-# Opens the file specified in the filePath variable
 with open(filePath) as infile:
     print('Processing data, please wait..')
 
-    # For every line in the log file, execute this code
     for line in infile:
         # Takes an IP address from the line and converts it into a string
         IP = ''.join(re.findall(IPregex, line))
 
-        # Only proceed with date commands if the line contains a date
+        # Only proceed with date commands if the line contains a valid date
         if bool(re.search(Dateregex, line)):
             # Grabs the date and turns it into ISO-format
             date = ''.join(re.findall(Dateregex, line))
@@ -47,12 +42,10 @@ with open(filePath) as infile:
                 if date > latestDate[IP]:
                     latestDate[IP] = date
 
-        # Find amount of occurances for each unique IP address
+        # Increment IP hit count
         if IP not in hits:
-            # First occurance of the IP address
             hits[IP] = 1
         else:
-            # Count reoccuring hits
             hits[IP] += 1
 
 # Grab the 20 most common IPs
@@ -64,7 +57,7 @@ totalIPs = len(hits)
 totalAccess = sum(hits.values())
 IPpercentage = 1/(len(hits))*100
 
-# Creates lists that will be used for the HTML table
+# Data that will be used for the HTML table
 IPs = [x[0] for x in MostCommon]
 hitCount = [x[1] for x in MostCommon]
 PercentageAccess = []
@@ -72,7 +65,6 @@ for x in MostCommon:
     percentage = round(hits[x[0]] / totalAccess * 100, 3)
     PercentageAccess.append(percentage)
 
-# Creates a string containing the base HTML table
 html_table = """
 <html>
 <head>
@@ -90,7 +82,7 @@ html_table = """
     </tr>
 """
 
-# Appends data cells to the table headers for the 20 most common IPs
+# Add rows to the HTML table for the 20 most common IPs
 for x in range(20):
     html_table += '    <tr>\n'
     html_table += '        <td>{}</td>\n'.format(IPs[x])
@@ -103,13 +95,13 @@ for x in range(20):
         str(round(IPpercentage, 5)) + '%')
     html_table += '    </tr>\n'
 
-# Appends the final HTML code to the html_table string
+# Closing HTML tags
 html_table += """</table>
 </body>
 </html>
 """
 
-# Creates a "table.html" file and writes the data from the html_table string to the file
+# Write "table.html" HTML document
 with open("table.html", "w") as file:
     file.write(html_table)
 
