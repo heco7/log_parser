@@ -7,9 +7,9 @@ from collections import Counter
 filePath = 'almhuette-raith-at-access.log'
 
 # Regex
-IPregex = r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
-Dateregex = r'\d{2}/\w{3}/\d{4}'
-ISOregex = r'\d{4}\-\d{2}\-\d{2}'
+ipRegex = r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
+dateRegex = r'\d{2}/\w{3}/\d{4}'
+isoRegex = r'\d{4}\-\d{2}\-\d{2}'
 
 # Dictionaries for dates/IP hit count
 earliestDate = {}
@@ -21,15 +21,15 @@ with open(filePath) as infile:
 
     for line in infile:
         # Takes an IP address from the line and converts it into a string
-        IP = ''.join(re.findall(IPregex, line))
+        IP = ''.join(re.findall(ipRegex, line))
 
         # Only proceed with date commands if the line contains a valid date
-        if bool(re.search(Dateregex, line)):
+        if bool(re.search(dateRegex, line)):
             # Grabs the date and turns it into ISO-format
-            date = ''.join(re.findall(Dateregex, line))
+            date = ''.join(re.findall(dateRegex, line))
             date = parser.parse(date)
             date = date.isoformat()
-            date = ''.join(re.findall(ISOregex, date))
+            date = ''.join(re.findall(isoRegex, date))
 
             # Find the earliest and latest date
             if IP not in earliestDate:
@@ -50,20 +50,20 @@ with open(filePath) as infile:
 
 # Grab the 20 most common IPs
 count = Counter(hits)
-MostCommon = count.most_common(20)
+mostCommon = count.most_common(20)
 
 # Generates the total amount of unique IPs, total amount of accesses and how unique each IP is in percentage
 totalIPs = len(hits)
 totalAccess = sum(hits.values())
-IPpercentage = 1/(len(hits))*100
+ipPercentage = 1/(len(hits))*100
 
 # Data that will be used for the HTML table
-IPs = [x[0] for x in MostCommon]
-hitCount = [x[1] for x in MostCommon]
-PercentageAccess = []
-for x in MostCommon:
+IPs = [x[0] for x in mostCommon]
+hitCount = [x[1] for x in mostCommon]
+percentageAccess = []
+for x in mostCommon:
     percentage = round(hits[x[0]] / totalAccess * 100, 3)
-    PercentageAccess.append(percentage)
+    percentageAccess.append(percentage)
 
 html_table = """
 <html>
@@ -90,9 +90,9 @@ for x in range(20):
     html_table += '        <td>{}</td>\n'.format(earliestDate[IPs[x]])
     html_table += '        <td>{}</td>\n'.format(latestDate[IPs[x]])
     html_table += '        <td>{}</td>\n'.format(
-        str(PercentageAccess[x]) + '%')
+        str(percentageAccess[x]) + '%')
     html_table += '        <td>{}</td>\n'.format(
-        str(round(IPpercentage, 5)) + '%')
+        str(round(ipPercentage, 5)) + '%')
     html_table += '    </tr>\n'
 
 # Closing HTML tags
@@ -101,7 +101,7 @@ html_table += """</table>
 </html>
 """
 
-# Write "table.html" HTML document
+# Write HTML document
 with open("table.html", "w") as file:
     file.write(html_table)
 
